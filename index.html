@@ -954,9 +954,9 @@
                 <span>🚀 Ship ${shipId}</span>
                 <p>Trader Level: <span id="trader-level-${shipId}">${traderLevel}</span></p>
                 <div class="progress-bar" title="Click anywhere on the ship to start trade">
-                    <div class="progress" id="progress-${shipId}"></div>
-                    <span class="progress-time" id="progress-time-${shipId}">10s</span>
-                    <span class="progress-earnings" id="progress-earnings-${shipId}">0 💸</span>
+                    <div class="progress" id="progress-${ship.id}"></div>
+                    <span class="progress-time" id="progress-time-${ship.id}">10s</span>
+                    <span class="progress-earnings" id="progress-earnings-${ship.id}">0 💸</span>
                 </div>
                 <button class="button upgrade-trader-button" onclick="buyBetterTrader(${shipId})" title="Enhance trader efficiency">Upgrade Trader</button>
                 <div class="automation-indicator" title="Automated Trading">🤖</div>
