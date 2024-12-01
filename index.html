@@ -1431,35 +1431,26 @@
                 // Example: Each RP increases tech level by 1
                 gameState.techLevel += gameState.rebirthPoints;
                 gameState.totalUpgrades += gameState.rebirthPoints;
-                logEvent(`🔧 You spent ${gameState.rebirthPoints} Rebirth Points to increase tech level by ${gameState.rebirthPoints}.`);
-                gameState.rebirthPoints = 0;
-                updateDisplay();
-                saveGame();
-            } else {
-                logEvent(`⚠ No Rebirth Points to spend!`, 'warning');
-            }
-        }
-
-        // ==================== RANDOM EVENTS ====================
-        function triggerRandomEvent() {
-            const randomNumber = Math.random();
-            if (randomNumber < 0.1) { // 10% chance of event
-                const eventType = "Piracy Attack";
-                const damage = Math.floor(500 * (1 - gameState.securityProtection / 100));
-                gameState.credits = Math.max(0, gameState.credits - damage);
-                logEvent(`💥 ${eventType}! You lost ${formatNumberWithSuffix(damage)} credits.`);
-                updateDisplay();
-                saveGame();
-            } else {
-                // No event
-            }
+                 logEvent(`🔧 You spent ${gameState.rebirthPoints} Rebirth Points to increase tech level by ${gameState.rebirthPoints}.`);
+            gameState.rebirthPoints = 0;
+            updateDisplay();
+            saveGame();
+        } else {
+            logEvent(`⚠ No Rebirth Points to spend!`, 'warning');
         }
 
         // ==================== SHARE FEATURE ====================
         function shareGame() {
             const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
             if (currentTime - gameState.shareCooldown.lastShareTime < gameState.shareCooldown.cooldownDuration) {
-                const remaining = gameState.shareCooldown.cooldownDuration - (currentTime - gameState.shareCooldown.lastShareTime);
+                logEvent(`⚠ Share bonus is on cooldown. Please wait before sharing again.`, 'warning');
+                return;
+            }
+
+            openModal('share-confirm-modal');
+            updateShareCooldown();
+        }
+        const remaining = gameState.shareCooldown.cooldownDuration - (currentTime - gameState.shareCooldown.lastShareTime);
                 logEvent(`⚠ Share bonus is on cooldown. Please wait ${formatTime(remaining)} before sharing again.`, 'warning');
                 return;
             }
