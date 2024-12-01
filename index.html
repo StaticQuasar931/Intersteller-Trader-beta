@@ -40,6 +40,7 @@
             display: flex;
             gap: 15px;
             font-size: 14px;
+            flex-wrap: wrap;
         }
 
         /* ==================== MAIN CONTENT ==================== */
@@ -83,6 +84,19 @@
             display: block;
             width: 100%;
             margin: 5px 0;
+            padding: 10px;
+            background-color: #333;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .sidebar .button:hover:not(:disabled) {
+            background-color: #555;
         }
 
         /* ==================== MAIN CONTENT STYLES ==================== */
@@ -102,6 +116,9 @@
             margin-bottom: 15px;
             position: relative;
             transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .ship.upgrade-highlight {
@@ -118,12 +135,13 @@
         }
 
         .ship h3 {
-            margin: 0 0 10px 0;
+            margin: 0;
             font-size: 18px;
         }
 
         .ship p {
             margin: 5px 0;
+            font-size: 14px;
         }
 
         .progress-bar {
@@ -173,7 +191,7 @@
             font-size: 14px;
         }
 
-        .ship button:hover {
+        .ship button:hover:not(:disabled) {
             background-color: #555;
         }
 
@@ -560,7 +578,7 @@
     <script>
         // ==================== GAME CONSTANTS ====================
         const GAME_URL = window.location.href; // Current game URL
-        const VERSION = '2.0.0';
+        const VERSION = '2.1.0'; // Updated version
         const MAX_SHIPS = 100; // Adjusted for performance
         const MAX_REBIRTH_POINTS = 1000;
         const EVENT_LOG_LIMIT = 100; // Limit event log entries to 100
@@ -685,11 +703,14 @@
                         cooldownDuration: 86400 // 24 hours in seconds
                     };
                 }
-                if (!gameState.securityProtection) {
+                if (gameState.securityProtection === undefined) {
                     gameState.securityProtection = 0;
                 }
-                if (!gameState.lastImportTime) {
+                if (gameState.lastImportTime === undefined) {
                     gameState.lastImportTime = 0;
+                }
+                if (!gameState.nextShipId) {
+                    gameState.nextShipId = gameState.ships.length > 0 ? Math.max(...gameState.ships.map(s => s.id)) + 1 : 2;
                 }
                 // Update version
                 gameState.version = VERSION;
@@ -2099,9 +2120,6 @@
             }
             openModal('rebirth-modal-confirm');
         }
-
-        // ==================== HELP MENU ====================
-        // Already implemented above
 
         // ==================== FINAL NOTES ====================
         // All functionalities have been implemented and bugs fixed as per the comprehensive checklist.
