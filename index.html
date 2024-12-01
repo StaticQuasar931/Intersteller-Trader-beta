@@ -364,6 +364,12 @@
             cursor: not-allowed;
             opacity: 0.6;
         }
+
+        /* ==================== AUTOMATION INDICATOR STYLES ==================== */
+        .ship.automation {
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
     </style>
 </head>
 <body>
@@ -539,13 +545,25 @@
         </div>
     </div>
 
+    <!-- Reset Confirmation Modal -->
+    <div id="reset-modal" class="modal-menu" role="dialog" aria-labelledby="reset-modal-title" aria-modal="true">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('reset-modal')" aria-label="Close Reset Confirmation Modal">&times;</span>
+            <h3 id="reset-modal-title">🔄 Reset Game</h3>
+            <p>Are you sure you want to reset the game? This action cannot be undone.</p>
+            <button class="button" onclick="performReset()" title="Confirm Reset" aria-label="Confirm Reset">🔄 Confirm Reset</button>
+            <button class="button" onclick="closeModal('reset-modal')" title="Cancel Reset" aria-label="Cancel Reset">❌ Cancel</button>
+        </div>
+    </div>
+
     <!-- ==================== SCRIPT ==================== -->
     <script>
         // ==================== GAME CONSTANTS ====================
         const GAME_URL = window.location.href; // Current game URL
-        const VERSION = '1.0.1';
+        const VERSION = '2.0.0';
         const MAX_SHIPS = 100; // Adjusted for performance
         const MAX_REBIRTH_POINTS = 1000;
+        const EVENT_LOG_LIMIT = 100; // Limit event log entries to 100
 
         // ==================== GAME STATE ====================
         let gameState = {
@@ -612,7 +630,7 @@
             } catch (e) {
                 console.error("Save failed:", e);
                 logEvent("⚠ Save failed due to browser restrictions. Your progress may not be saved.", 'warning');
-                alert("⚠ Unable to save your game progress. Please check your browser settings.");
+                showNotification("⚠ Unable to save your game progress. Please check your browser settings.", 'warning');
             }
         }
 
@@ -632,6 +650,7 @@
                         renderShips();
                     } else {
                         logEvent("⚠ Save data version mismatch or corrupted. Starting a new game.", 'warning');
+                        showNotification("⚠ Save data version mismatch or corrupted. Starting a new game.", 'warning');
                         resetGameState();
                     }
                 } else {
@@ -641,7 +660,7 @@
             } catch (e) {
                 console.error("Load failed:", e);
                 logEvent("⚠ Load failed due to corrupted or inaccessible save data. Starting a new game.", 'error');
-                alert("⚠ Unable to load your game progress. Starting a new game.");
+                showNotification("⚠ Unable to load your game progress. Starting a new game.", 'error');
                 resetGameState();
             }
         }
@@ -666,6 +685,12 @@
                         cooldownDuration: 86400 // 24 hours in seconds
                     };
                 }
+                if (!gameState.securityProtection) {
+                    gameState.securityProtection = 0;
+                }
+                if (!gameState.lastImportTime) {
+                    gameState.lastImportTime = 0;
+                }
                 // Update version
                 gameState.version = VERSION;
                 saveGame();
@@ -687,11 +712,8 @@
             const currentTime = Date.now();
             const offlineTime = Math.floor((currentTime - gameState.lastSaveTime) / 1000); // in seconds
             const MAX_OFFLINE_TIME = 86400; // 24 hours in seconds
-            if (offlineTime > MAX_OFFLINE_TIME) {
-                offlineTime = MAX_OFFLINE_TIME;
-            }
-            if (offlineTime > 0) {
-                const effectiveTime = Math.floor(offlineTime * 0.3); // 0.3x effectiveness
+            let effectiveTime = offlineTime > MAX_OFFLINE_TIME ? MAX_OFFLINE_TIME : offlineTime;
+            if (effectiveTime > 0) {
                 const tradeDuration = 10; // base trade duration in seconds
                 let tradesPossible = 0;
                 let totalProfit = 0;
@@ -713,7 +735,8 @@
                     gameState.totalCreditsEarned += totalProfit;
                     gameState.totalEarnings += totalProfit;
                     gameState.totalTrades += tradesPossible;
-                    logEvent(`⏰ You were offline for ${formatTime(offlineTime)} and earned ${formatNumberWithSuffix(totalProfit)} credits.`);
+                    logEvent(`⏰ You were offline for ${formatTime(effectiveTime)} and earned ${formatNumberWithSuffix(totalProfit)} credits.`);
+                    showNotification(`⏰ Offline Earnings: +${formatNumberWithSuffix(totalProfit)} Credits`, 'info');
                     updateDisplay();
                     saveGame();
                 }
@@ -789,7 +812,9 @@
                     buyShipSlotsButton.disabled = gameState.credits < shipSlotsCost || gameState.shipLimit >= MAX_SHIPS;
                 }
                 if (upgradeAllButton) {
-                    upgradeAllButton.disabled = gameState.credits < calculateUpgradeAllCost() || gameState.ships.length === 0;
+                    const totalUpgradeCost = calculateUpgradeAllCost();
+                    upgradeAllButton.innerText = `⬆️ Upgrade All Ships (Total Cost: ${formatNumberWithSuffix(totalUpgradeCost)} Credits)`;
+                    upgradeAllButton.disabled = gameState.credits < totalUpgradeCost || gameState.ships.length === 0;
                 }
             }
 
@@ -908,11 +933,22 @@
             eventLog.appendChild(p);
             
             // Limit to last 100 entries
-            if (eventLog.children.length > 100) {
+            if (eventLog.children.length > EVENT_LOG_LIMIT) {
                 eventLog.removeChild(eventLog.firstChild);
             }
             
             eventLog.scrollTop = eventLog.scrollHeight;
+        }
+
+        // ==================== NOTIFICATIONS ====================
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.classList.add('global-notification', type);
+            notification.innerText = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.remove();
+            }, 3000); // Display for 3 seconds
         }
 
         // ==================== SHIP MANAGEMENT ====================
@@ -1010,6 +1046,7 @@
             const progressEarnings = document.getElementById(`progress-earnings-${ship.id}`);
             if (!progressBar || !progressTime || !progressEarnings) {
                 logEvent(`⚠ Unable to start trade for Ship ${ship.id}. Missing progress elements.`, 'warning');
+                showNotification(`⚠ Unable to start trade for Ship ${ship.id}.`, 'warning');
                 return;
             }
 
@@ -1048,8 +1085,10 @@
                     gameState.totalTrades += 1;
                     if (isAutomated) {
                         logEvent(`✨ [AUTO] Ship ${ship.id} completed a trade mission and earned ${formatNumberWithSuffix(earnings)} credits!`);
+                        showNotification(`✨ [AUTO] Ship ${ship.id} earned ${formatNumberWithSuffix(earnings)} Credits!`, 'info');
                     } else {
                         logEvent(`✨ Ship ${ship.id} completed a trade mission and earned ${formatNumberWithSuffix(earnings)} credits!`);
+                        showNotification(`✨ Ship ${ship.id} earned ${formatNumberWithSuffix(earnings)} Credits!`, 'info');
                     }
                     progressBar.style.width = '0%'; // Reset progress bar
                     updateDisplay();
@@ -1077,6 +1116,7 @@
                 }
             });
             logEvent(`⚙️ All ships have been sent to trade missions.`);
+            showNotification(`⚙️ All ships sent on trade missions.`, 'info');
             updateDisplay();
             saveGame();
         }
@@ -1091,6 +1131,7 @@
         function buyShip() {
             if (gameState.ships.length >= Math.min(gameState.shipLimit, MAX_SHIPS)) {
                 logEvent(`⚠ You've reached the maximum number of ships (${formatNumberWithSuffix(Math.min(gameState.shipLimit, MAX_SHIPS))}).`, 'warning');
+                showNotification(`⚠ Maximum ships reached (${formatNumberWithSuffix(Math.min(gameState.shipLimit, MAX_SHIPS))}).`, 'warning');
                 return;
             }
             const cost = Math.floor(80 * Math.pow(1.15, gameState.ships.length));
@@ -1107,10 +1148,12 @@
                 });
                 addShip(newShipId);
                 logEvent(`🚀 You bought a new spaceship! Total ships: ${gameState.ships.length}`);
+                showNotification(`🚀 New ship purchased! Total ships: ${gameState.ships.length}`, 'success');
                 updateDisplay();
                 saveGame();
             } else {
                 logEvent(`⚠ Not enough credits to buy a new ship! (Cost: ${formatNumberWithSuffix(cost)} Credits)`, 'warning');
+                showNotification(`⚠ Insufficient Credits to buy a ship.`, 'warning');
             }
         }
 
@@ -1119,10 +1162,12 @@
             const ship = gameState.ships.find(s => s.id === shipId);
             if (!ship) {
                 logEvent(`⚠ Ship ${shipId} not found.`, 'error');
+                showNotification(`⚠ Ship ${shipId} not found.`, 'error');
                 return;
             }
             if (ship.traderLevel >= 100) {
-                logEvent(`⚠ Ship ${shipId} has reached the maximum trader level.`, 'warning');
+                logEvent(`⚠ Ship ${ship.id} has reached the maximum trader level.`, 'warning');
+                showNotification(`⚠ Ship ${ship.id} is already at maximum trader level.`, 'warning');
                 return;
             }
             const cost = Math.floor(10 * Math.pow(1.5, ship.upgrades));
@@ -1133,10 +1178,12 @@
                 gameState.techLevel += 0.1; // Increment tech level slightly for each upgrade
                 gameState.totalUpgrades += 1;
                 logEvent(`🔼 Ship ${ship.id} trader level increased to ${ship.traderLevel}.`);
+                showNotification(`🔼 Ship ${ship.id} upgraded to Trader Level ${ship.traderLevel}.`, 'success');
                 updateDisplay();
                 saveGame();
             } else {
                 logEvent(`⚠ Not enough credits to upgrade Ship ${ship.id}! (Cost: ${formatNumberWithSuffix(cost)} Credits)`, 'warning');
+                showNotification(`⚠ Insufficient Credits to upgrade Ship ${ship.id}.`, 'warning');
             }
         }
 
@@ -1149,6 +1196,7 @@
             const nextShip = gameState.ships.find(ship => !ship.automation);
             if (!nextShip) {
                 logEvent(`⚠ All ships already have automation.`, 'warning');
+                showNotification(`⚠ All ships have automation.`, 'warning');
                 return;
             }
             const automationCount = gameState.ships.filter(s => s.automation).length;
@@ -1157,6 +1205,7 @@
                 gameState.credits -= cost;
                 nextShip.automation = true;
                 logEvent(`🤖 Automation purchased for Ship ${nextShip.id}!`);
+                showNotification(`🤖 Automation enabled for Ship ${nextShip.id}.`, 'success');
                 updateDisplay();
                 saveGame();
                 // Start automation immediately
@@ -1165,6 +1214,7 @@
                 }
             } else {
                 logEvent(`⚠ Not enough credits to buy automation! (Cost: ${formatNumberWithSuffix(cost)} Credits)`, 'warning');
+                showNotification(`⚠ Insufficient Credits to buy automation.`, 'warning');
             }
         }
 
@@ -1172,6 +1222,7 @@
             const cost = Math.floor(10000 * Math.pow(1.5, gameState.techLevel - 1));
             if (gameState.multiplier >= 50) { // Example cap
                 logEvent(`⚠ Maximum multiplier reached.`, 'warning');
+                showNotification(`⚠ Multiplier is already at maximum.`, 'warning');
                 return;
             }
             if (gameState.credits >= cost) {
@@ -1179,16 +1230,19 @@
                 gameState.multiplier = Math.min(gameState.multiplier + 1, 50); // Ensure multiplier does not exceed cap
                 gameState.totalUpgrades += 1;
                 logEvent(`✖️ Multiplier purchased! Technology multiplier increased to x${gameState.multiplier}.`);
+                showNotification(`✖️ Multiplier upgraded to x${gameState.multiplier}.`, 'success');
                 updateDisplay();
                 saveGame();
             } else {
                 logEvent(`⚠ Not enough credits to buy multiplier! (Cost: ${formatNumberWithSuffix(cost)} Credits)`, 'warning');
+                showNotification(`⚠ Insufficient Credits to buy multiplier.`, 'warning');
             }
         }
 
         function buyShipSlots() {
             if (gameState.shipLimit >= MAX_SHIPS) {
                 logEvent(`⚠ Cannot buy more ship slots. Maximum ship limit reached (${formatNumberWithSuffix(MAX_SHIPS)}).`, 'warning');
+                showNotification(`⚠ Maximum ship slots reached (${formatNumberWithSuffix(MAX_SHIPS)}).`, 'warning');
                 return;
             }
             const shipSlotsCost = Math.floor(20000 * Math.pow(1.5, gameState.shipLimit / 10));
@@ -1196,10 +1250,12 @@
                 gameState.credits -= shipSlotsCost;
                 gameState.shipLimit += 10; // Each purchase adds 10 ship slots
                 logEvent(`➕ Ship slots purchased! New ship limit: ${formatNumberWithSuffix(gameState.shipLimit)}.`);
+                showNotification(`➕ Ship slots increased to ${formatNumberWithSuffix(gameState.shipLimit)}.`, 'success');
                 updateDisplay();
                 saveGame();
             } else {
                 logEvent(`⚠ Not enough credits to buy ship slots! (Cost: ${formatNumberWithSuffix(shipSlotsCost)} Credits)`, 'warning');
+                showNotification(`⚠ Insufficient Credits to buy ship slots.`, 'warning');
             }
         }
 
@@ -1223,6 +1279,7 @@
                             gameState.techLevel += 0.1; // Increment tech level slightly for each upgrade
                             gameState.totalUpgrades += 1;
                             logEvent(`🔼 Ship ${ship.id} trader level increased to ${ship.traderLevel}.`);
+                            showNotification(`🔼 Ship ${ship.id} upgraded to Trader Level ${ship.traderLevel}.`, 'success');
                         } else {
                             break;
                         }
@@ -1241,6 +1298,7 @@
                             gameState.techLevel += 0.1; // Increment tech level slightly for each upgrade
                             gameState.totalUpgrades += 1;
                             logEvent(`🔼 Ship ${ship.id} trader level increased to ${ship.traderLevel}.`);
+                            showNotification(`🔼 Ship ${ship.id} upgraded to Trader Level ${ship.traderLevel}.`, 'success');
                         }
                     });
                 }
@@ -1261,10 +1319,12 @@
             const employee = gameState.employees[type];
             if (!employee) {
                 logEvent(`⚠ Invalid employee type: ${type}.`, 'error');
+                showNotification(`⚠ Invalid employee type: ${type}.`, 'error');
                 return;
             }
             if (employee.level >= EMPLOYEE_MAX_LEVEL[type]) {
                 logEvent(`⚠ ${capitalize(type)} Employee has reached the maximum level (${EMPLOYEE_MAX_LEVEL[type]}).`, 'warning');
+                showNotification(`⚠ ${capitalize(type)} Employee is already at maximum level.`, 'warning');
                 return;
             }
             const cost = Math.floor(employee.cost * Math.pow(1.2, employee.level));
@@ -1272,17 +1332,20 @@
                 gameState.credits -= cost;
                 gameState.employees[type].level += 1;
                 logEvent(`👨‍🚀 Hired a Level ${gameState.employees[type].level} ${capitalize(type)} Employee!`);
+                showNotification(`👨‍🚀 Hired a Level ${gameState.employees[type].level} ${capitalize(type)} Employee!`, 'success');
                 // Apply employee-specific benefits
                 switch(type) {
                     case 'storage':
                         const shipsToAdd = 2; // Each level adds 2 ships
                         gameState.shipLimit += shipsToAdd;
                         logEvent(`📦 Storage Employee increased ship limit by ${formatNumberWithSuffix(shipsToAdd)} ships to ${formatNumberWithSuffix(gameState.shipLimit)}.`);
+                        showNotification(`📦 Ship limit increased by ${formatNumberWithSuffix(shipsToAdd)} ships.`, 'success');
                         break;
                     case 'efficiency':
                         // Each Efficiency Employee increases multiplier by 0.5
                         gameState.multiplier = Math.min(gameState.multiplier + 0.5, 50); // Respect multiplier cap
                         logEvent(`⚙️ Efficiency Employee improved trade efficiency. Tech multiplier increased to x${gameState.multiplier}.`);
+                        showNotification(`⚙️ Tech multiplier increased to x${gameState.multiplier}.`, 'success');
                         break;
                     case 'security':
                         // Each Security Employee increases protection by 10%
@@ -1290,8 +1353,10 @@
                         if (gameState.securityProtection > 100) {
                             gameState.securityProtection = 100;
                             logEvent(`🛡️ Security Protection capped at 100%.`);
+                            showNotification(`🛡️ Security Protection capped at 100%.`, 'info');
                         } else {
                             logEvent(`🛡️ Security Employee increased protection by 10%. Current Protection: ${gameState.securityProtection}%`);
+                            showNotification(`🛡️ Security Protection increased to ${gameState.securityProtection}%.`, 'success');
                         }
                         break;
                     default:
@@ -1301,6 +1366,7 @@
                 saveGame();
             } else {
                 logEvent(`⚠ Not enough credits to hire ${capitalize(type)} employee! (Cost: ${formatNumberWithSuffix(cost)} Credits)`, 'warning');
+                showNotification(`⚠ Insufficient Credits to hire ${capitalize(type)} employee.`, 'warning');
             }
         }
 
@@ -1313,6 +1379,7 @@
             const requiredCredits = 100000;
             if (gameState.credits < requiredCredits) {
                 logEvent(`⚠ Not enough credits to rebirth! (Requires ${formatNumberWithSuffix(requiredCredits)} Credits)`, 'warning');
+                showNotification(`⚠ Insufficient Credits to rebirth.`, 'warning');
                 return;
             }
             // Check rebirth cooldown
@@ -1320,6 +1387,7 @@
             if (currentTime - gameState.rebirthCooldown.lastRebirthTime < gameState.rebirthCooldown.cooldownDuration) {
                 const remaining = gameState.rebirthCooldown.cooldownDuration - (currentTime - gameState.rebirthCooldown.lastRebirthTime);
                 logEvent(`⚠ Rebirth is on cooldown. Please wait ${formatTime(remaining)} before rebirthing again.`, 'warning');
+                showNotification(`⚠ Rebirth is on cooldown. Wait ${formatTime(remaining)}.`, 'warning');
                 return;
             }
 
@@ -1327,6 +1395,7 @@
             const pointsEarned = Math.floor(gameState.totalCreditsEarned / 100000); // 100K credits = 1 RP
             if (pointsEarned < 1) {
                 logEvent(`⚠ Not enough total credits to rebirth!`, 'warning');
+                showNotification(`⚠ Not enough total credits to rebirth.`, 'warning');
                 return;
             }
 
@@ -1334,6 +1403,7 @@
             const actualPointsEarned = Math.min(pointsEarned, MAX_REBIRTH_POINTS - gameState.rebirthPoints);
             if (actualPointsEarned < 1) {
                 logEvent(`⚠ Rebirth Points are at maximum (${MAX_REBIRTH_POINTS} RP).`, 'warning');
+                showNotification(`⚠ Rebirth Points are already at maximum.`, 'warning');
                 return;
             }
 
@@ -1370,6 +1440,7 @@
             gameState.rebirthCooldown.lastRebirthTime = currentTime;
 
             logEvent(`♻️ You have rebirthed! Earned ${actualPointsEarned} Rebirth Points.`);
+            showNotification(`♻️ Rebirth successful! Earned ${actualPointsEarned} RP.`, 'success');
             showRebirthConfirmation(actualPointsEarned);
             updateDisplay();
             saveGame();
@@ -1384,7 +1455,17 @@
                 openConfirmationModal('spend-rp', `Are you sure you want to spend ${gameState.rebirthPoints} Rebirth Points to increase your tech level by ${gameState.rebirthPoints}?`);
             } else {
                 logEvent(`⚠ No Rebirth Points to spend!`, 'warning');
+                showNotification(`⚠ No Rebirth Points to spend.`, 'warning');
             }
+        }
+
+        // ==================== REBIRTH CONFIRMATION ====================
+        function showRebirthConfirmation(points) {
+            const pointsEarnedElement = document.getElementById('points-earned');
+            if (pointsEarnedElement) {
+                pointsEarnedElement.innerText = points;
+            }
+            openModal('rebirth-modal-confirm');
         }
 
         // ==================== RANDOM EVENTS ====================
@@ -1396,8 +1477,10 @@
                 if (damage > 0) {
                     gameState.credits = Math.max(0, gameState.credits - damage);
                     logEvent(`💥 ${eventType}! You lost ${formatNumberWithSuffix(damage)} credits.`);
+                    showNotification(`💥 ${eventType}! Lost ${formatNumberWithSuffix(damage)} Credits.`, 'error');
                 } else {
                     logEvent(`💥 ${eventType} occurred, but your security protection prevented any loss!`);
+                    showNotification(`💥 ${eventType} occurred, but no loss due to security protection!`, 'success');
                 }
                 updateDisplay();
                 saveGame();
@@ -1408,6 +1491,7 @@
                 gameState.totalCreditsEarned += bonus;
                 gameState.totalEarnings += bonus;
                 logEvent(`📈 ${eventType}! You earned a bonus of ${formatNumberWithSuffix(bonus)} credits.`);
+                showNotification(`📈 ${eventType}! Earned ${formatNumberWithSuffix(bonus)} Credits.`, 'success');
                 updateDisplay();
                 saveGame();
             }
@@ -1420,6 +1504,7 @@
             if (currentTime - gameState.shareCooldown.lastShareTime < gameState.shareCooldown.cooldownDuration) {
                 const remaining = gameState.shareCooldown.cooldownDuration - (currentTime - gameState.shareCooldown.lastShareTime);
                 logEvent(`⚠ Share bonus is on cooldown. Please wait ${formatTime(remaining)} before sharing again.`, 'warning');
+                showNotification(`⚠ Share bonus is on cooldown. Wait ${formatTime(remaining)}.`, 'warning');
                 return;
             }
             openModal('share-confirm-modal');
@@ -1435,12 +1520,14 @@
             const copyButton = document.querySelector('#share-confirm-modal .button[onclick="copyShareLink()"]');
             if (!shareLink) {
                 logEvent(`⚠ Share Link element not found.`, 'error');
+                showNotification(`⚠ Share link not found.`, 'error');
                 return;
             }
             try {
                 if (navigator.clipboard && window.isSecureContext) {
                     await navigator.clipboard.writeText(shareLink.value);
                     logEvent(`📋 Game link copied to clipboard! You earned a 500 Credits bonus.`);
+                    showNotification(`📋 Share link copied! +500 Credits.`, 'success');
                     gameState.credits += 500;
                     gameState.totalCreditsEarned += 500;
                     gameState.totalEarnings += 500;
@@ -1463,6 +1550,7 @@
                     shareLink.setSelectionRange(0, 99999); // For mobile devices
                     document.execCommand('copy');
                     logEvent(`📋 Game link selected for manual copying. You earned a 500 Credits bonus.`);
+                    showNotification(`📋 Share link selected! +500 Credits.`, 'success');
                     gameState.credits += 500;
                     gameState.totalCreditsEarned += 500;
                     gameState.totalEarnings += 500;
@@ -1482,6 +1570,7 @@
             } catch (err) {
                 console.error('Failed to copy:', err);
                 logEvent(`⚠ Failed to copy the game link.`, 'error');
+                showNotification(`⚠ Failed to copy share link.`, 'error');
             }
             closeShareConfirmModal();
         }
@@ -1513,6 +1602,8 @@
             const buyAmountButton = document.querySelector('.buy-toggle');
             if (buyAmountButton) {
                 buyAmountButton.innerText = `Buy: ${gameState.buyAmounts[gameState.currentBuyIndex]}`;
+            } else {
+                console.error("Buy amount button not found.");
             }
             saveGame();
         }
@@ -1541,6 +1632,8 @@
             }
             updateTheme();
             saveGame();
+            logEvent(`🖌️ Theme changed to ${capitalize(gameState.theme)}.`);
+            showNotification(`🖌️ Theme changed to ${capitalize(gameState.theme)}.`, 'info');
         }
 
         function updateTheme() {
@@ -1577,9 +1670,15 @@
         }
 
         function performReset() {
-            localStorage.removeItem('interstellarTraderSave');
-            localStorage.removeItem('interstellarTraderBackups');
-            location.reload();
+            try {
+                localStorage.removeItem('interstellarTraderSave');
+                localStorage.removeItem('interstellarTraderBackups');
+                location.reload();
+            } catch (e) {
+                console.error("Reset failed:", e);
+                logEvent(`⚠ Reset failed due to an error.`, 'error');
+                showNotification(`⚠ Reset failed. Please try again.`, 'error');
+            }
         }
 
         // ==================== CLEAR EVENT LOG ====================
@@ -1588,9 +1687,11 @@
             if (eventLogEntries) {
                 eventLogEntries.innerHTML = '';
                 logEvent(`📜 Event log cleared.`);
+                showNotification(`📜 Event log cleared.`, 'info');
                 saveGame();
             } else {
                 logEvent(`⚠ Event log entries container not found.`, 'error');
+                showNotification(`⚠ Unable to clear event log.`, 'error');
             }
         }
 
@@ -1620,6 +1721,7 @@
                 trapFocus(modal);
             } else {
                 logEvent(`⚠ Modal ${modalId} not found.`, 'error');
+                showNotification(`⚠ Modal ${modalId} not found.`, 'error');
             }
         }
 
@@ -1638,6 +1740,9 @@
             modals.forEach(modal => {
                 modal.style.display = 'none';
             });
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
         }
 
         // Close modals when clicking outside of them
@@ -1659,15 +1764,18 @@
                 navigator.clipboard.writeText(encodedBackup).then(() => {
                     showExportFeedback(`Save code copied to clipboard!`);
                     logEvent(`💾 Save code exported and copied successfully.`);
+                    showNotification(`💾 Save code copied to clipboard!`, 'success');
                 }).catch(err => {
                     console.error("Export failed:", err);
                     showExportFeedback(`Failed to copy save code.`, false);
                     logEvent(`⚠ Failed to export save code.`, 'error');
+                    showNotification(`⚠ Failed to copy save code.`, 'error');
                 });
             } catch (e) {
                 console.error("Export failed:", e);
                 showExportFeedback(`Failed to export save code.`, false);
                 logEvent(`⚠ Failed to export save code.`, 'error');
+                showNotification(`⚠ Failed to export save code.`, 'error');
             }
         }
 
@@ -1708,6 +1816,7 @@
                 const remaining = 3600 - (currentTime - gameState.lastImportTime);
                 importFeedback.innerText = `⚠ Import is on cooldown. Please wait ${formatTime(remaining)} before importing again.`;
                 logEvent(`⚠ Import is on cooldown. Please wait ${formatTime(remaining)} before importing again.`, 'warning');
+                showNotification(`⚠ Import is on cooldown. Wait ${formatTime(remaining)}.`, 'warning');
                 return;
             }
 
@@ -1741,6 +1850,7 @@
                     saveGame();
                     gameState.lastImportTime = currentTime;
                     importFeedback.innerHTML = `<span style="color: green;">✅ Save code imported successfully!</span>`;
+                    showNotification(`✅ Save code imported successfully!`, 'success');
                     setTimeout(() => {
                         closeImportModal(document.querySelector('#import-feedback').parentElement.querySelector('.close-modal'));
                     }, 2000);
@@ -1748,11 +1858,13 @@
                 } else {
                     importFeedback.innerText = '⚠ Invalid or tampered save code.';
                     logEvent(`⚠ Invalid or tampered save code.`, 'error');
+                    showNotification(`⚠ Invalid or tampered save code.`, 'error');
                 }
             } catch (e) {
                 console.error("Import failed:", e);
                 importFeedback.innerText = '⚠ Failed to import save code. Please ensure it is correct.';
                 logEvent(`⚠ Failed to import save code. Please ensure it is correct.`, 'error');
+                showNotification(`⚠ Failed to import save code.`, 'error');
             }
         }
 
@@ -1774,6 +1886,7 @@
             } catch (e) {
                 console.error("Backup failed:", e);
                 logEvent("⚠ Backup failed.", 'warning');
+                showNotification(`⚠ Backup failed.`, 'warning');
             }
         }
 
@@ -1810,18 +1923,23 @@
                             updateDisplay();
                             renderShips();
                             logEvent(`💾 Restored from backup successfully.`);
+                            showNotification(`💾 Restored from backup successfully.`, 'success');
                         } else {
                             logEvent(`⚠ Invalid or corrupted backup data.`, 'error');
+                            showNotification(`⚠ Invalid or corrupted backup data.`, 'error');
                         }
                     } else {
                         logEvent(`⚠ No backups available to restore.`, 'warning');
+                        showNotification(`⚠ No backups available to restore.`, 'warning');
                     }
                 } catch (e) {
                     console.error("Restore backup failed:", e);
                     logEvent(`⚠ Failed to restore from backup.`, 'error');
+                    showNotification(`⚠ Failed to restore from backup.`, 'error');
                 }
             } else {
                 logEvent(`⚠ No backups found.`, 'warning');
+                showNotification(`⚠ No backups found.`, 'warning');
             }
         }
 
@@ -1900,6 +2018,7 @@
             });
             // No employee intervals implemented, but placeholder if added in future
             stopGlobalTradeInterval();
+            stopTimeCounter();
         }
 
         // ==================== LOCALSTORAGE EVENT LISTENER ====================
@@ -1974,13 +2093,20 @@
 
         // ==================== SHOW REBIRTH CONFIRMATION ====================
         function showRebirthConfirmation(points) {
+            const pointsEarnedElement = document.getElementById('points-earned');
+            if (pointsEarnedElement) {
+                pointsEarnedElement.innerText = points;
+            }
             openModal('rebirth-modal-confirm');
-            document.getElementById('points-earned').innerText = points;
         }
+
+        // ==================== HELP MENU ====================
+        // Already implemented above
 
         // ==================== FINAL NOTES ====================
         // All functionalities have been implemented and bugs fixed as per the comprehensive checklist.
         // The game is now fully functional, secure, and optimized for performance and accessibility.
+        // Due to Google Sites' restrictions on embedding JavaScript, host the game externally and embed via an iframe.
     </script>
 </body>
 </html>
