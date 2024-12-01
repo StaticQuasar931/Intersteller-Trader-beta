@@ -1425,32 +1425,24 @@
                 logEvent(`⚠ Not enough credits to rebirth! (Requires ${formatNumberWithSuffix(requiredCredits)} Credits)`, 'warning');
             }
         }
-
         function spendRebirthPoints() {
             if (gameState.rebirthPoints > 0) {
                 // Example: Each RP increases tech level by 1
                 gameState.techLevel += gameState.rebirthPoints;
                 gameState.totalUpgrades += gameState.rebirthPoints;
-                 logEvent(`🔧 You spent ${gameState.rebirthPoints} Rebirth Points to increase tech level by ${gameState.rebirthPoints}.`);
-            gameState.rebirthPoints = 0;
-            updateDisplay();
-            saveGame();
-        } else {
-            logEvent(`⚠ No Rebirth Points to spend!`, 'warning');
+                logEvent(`🔧 You spent ${gameState.rebirthPoints} Rebirth Points to increase tech level by ${gameState.rebirthPoints}.`);
+                gameState.rebirthPoints = 0;
+                updateDisplay();
+                saveGame();
+            } else {
+                logEvent(`⚠ No Rebirth Points to spend!`, 'warning');
+            }
         }
-
         // ==================== SHARE FEATURE ====================
         function shareGame() {
             const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
             if (currentTime - gameState.shareCooldown.lastShareTime < gameState.shareCooldown.cooldownDuration) {
-                logEvent(`⚠ Share bonus is on cooldown. Please wait before sharing again.`, 'warning');
-                return;
-            }
-
-            openModal('share-confirm-modal');
-            updateShareCooldown();
-        }
-        const remaining = gameState.shareCooldown.cooldownDuration - (currentTime - gameState.shareCooldown.lastShareTime);
+                const remaining = gameState.shareCooldown.cooldownDuration - (currentTime - gameState.shareCooldown.lastShareTime);
                 logEvent(`⚠ Share bonus is on cooldown. Please wait ${formatTime(remaining)} before sharing again.`, 'warning');
                 return;
             }
