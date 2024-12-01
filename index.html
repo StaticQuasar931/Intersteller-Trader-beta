@@ -2,18 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interstellar Trader</title>
     <style>
         /* ==================== GENERAL STYLES ==================== */
         body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
             background-color: #0b0c10;
             color: #c5c6c7;
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
             transition: background-color 0.5s, color 0.5s;
-            overflow-x: hidden;
         }
         body.light-theme {
             background-color: #f5f5f5;
@@ -24,134 +22,90 @@
             color: #f0f0f0;
         }
         a.header-link {
-            position: absolute;
+            color: #66fcf1;
+            text-decoration: none;
+            position: fixed;
             top: 10px;
             left: 10px;
-            color: #66fcf1;
-            text-decoration: none;
-            font-size: 16px;
-            transition: color 0.3s, background-color 0.3s;
-            padding: 8px 12px;
-            border-radius: 5px;
-            background-color: rgba(102, 252, 241, 0.2);
+            z-index: 1001;
             font-weight: bold;
-            z-index: 1000;
         }
-        a.header-link:hover {
-            color: #0b0c10;
-            background-color: rgba(102, 252, 241, 0.4);
-        }
-        /* Play Game Here Link */
         a.play-game-link {
-            position: absolute;
-            top: 10px;
-            left: 160px; /* Adjusted to avoid overlap with header-link */
-            color: #66fcf1;
-            text-decoration: none;
-            font-size: 16px;
-            transition: color 0.3s, background-color 0.3s;
-            padding: 8px 12px;
-            border-radius: 5px;
-            background-color: rgba(102, 252, 241, 0.2);
-            font-weight: bold;
-            z-index: 1000;
-        }
-        a.play-game-link:hover {
-            color: #0b0c10;
-            background-color: rgba(102, 252, 241, 0.4);
-        }
-        .version {
-            position: fixed;
-            bottom: 10px;
+            left: auto;
             right: 10px;
-            color: #c5c6c7;
-            font-size: 12px;
-            z-index: 1000;
         }
-        h1 {
-            margin-top: 80px;
-            font-size: 48px;
-            color: #66fcf1;
+        h1, h2 {
+            text-align: center;
+            margin-top: 60px;
         }
-        h2 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #45a29e;
-        }
-
-        /* ==================== TOP BUTTONS BAR ==================== */
+        /* ==================== TOP BUTTONS ==================== */
         .top-buttons {
-            position: absolute;
+            position: fixed;
             top: 10px;
-            right: 10px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
-            flex-direction: column;
-            align-items: flex-end;
             gap: 10px;
             z-index: 1001;
         }
-        .top-buttons button {
-            background: #1f2833;
-            color: #c5c6c7;
-            border: none;
-            padding: 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            font-size: 16px;
-            font-weight: bold;
-            width: 180px;
-        }
-        .top-buttons button:hover:not(:disabled) {
-            background: #45a29e;
-            color: #ffffff;
-        }
-
-        /* ==================== BUY AMOUNT TOGGLE ==================== */
-        .buy-toggle {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .buy-toggle button {
-            background: #45a29e;
-            color: #0b0c10;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            font-weight: bold;
-            width: 100%;
-        }
-        .buy-toggle button:hover {
-            background: #66fcf1;
-            color: #0b0c10;
-        }
-
-        /* ==================== BUTTON STYLES ==================== */
-        .button {
+        .top-buttons .button {
             background-color: #66fcf1;
             color: #0b0c10;
             padding: 10px 20px;
             font-size: 16px;
             border: none;
             border-radius: 10px;
-            margin: 5px;
             cursor: pointer;
             transition: background-color 0.3s, color 0.3s;
             font-weight: bold;
         }
-        .button:hover:not(:disabled) {
+        .top-buttons .button:hover:not(:disabled) {
             background-color: #45a29e;
             color: #ffffff;
         }
-        .button:disabled {
+        .top-buttons .button:disabled {
             background-color: #c5c6c7;
             color: #1f2833;
             cursor: not-allowed;
         }
-
+        /* ==================== GAME AREA ==================== */
+        #game-area {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #1f2833;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #c5c6c7;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        #credits, #spaceship-display, #tech-level-display, #time-played, #rebirth-points {
+            font-size: 18px;
+            margin: 10px 0;
+            transition: color 0.5s;
+        }
+        body.light-theme #credits,
+        body.light-theme #spaceship-display,
+        body.light-theme #tech-level-display,
+        body.light-theme #time-played,
+        body.light-theme #rebirth-points {
+            color: #1f2833;
+        }
+        body.blue-theme #credits,
+        body.blue-theme #spaceship-display,
+        body.blue-theme #tech-level-display,
+        body.blue-theme #time-played,
+        body.blue-theme #rebirth-points {
+            color: #f0f0f0;
+        }
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
         /* ==================== EVENT LOG ==================== */
         .event-log {
             max-width: 800px;
@@ -170,8 +124,107 @@
         .event-log p {
             margin: 5px 0;
         }
-
-        /* ==================== MODAL MENUS ==================== */
+        .clear-log-button {
+            background: #ff5555;
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .clear-log-button:hover:not(:disabled) {
+            background: #ff0000;
+        }
+        /* ==================== SHIP CONTAINER ==================== */
+        #ship-area {
+            max-width: 1200px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .ship-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+        /* ==================== SHIP MODULE ==================== */
+        .ship {
+            background: #0b0c10;
+            border: 2px solid #66fcf1;
+            border-radius: 10px;
+            padding: 15px;
+            width: 220px;
+            position: relative;
+            box-shadow: 0 0 10px rgba(102,252,241,0.5);
+            cursor: pointer;
+            transition: transform 0.3s, background-color 0.5s, border-color 0.5s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        body.light-theme .ship {
+            background: #ffffff;
+            border: 2px solid #66fcf1;
+        }
+        body.blue-theme .ship {
+            background: #1e3d59;
+            border: 2px solid #f0f0f0;
+        }
+        .ship:hover {
+            transform: scale(1.05);
+        }
+        .ship p {
+            margin: 5px 0;
+            color: #66fcf1;
+            font-size: 14px;
+        }
+        body.light-theme .ship p {
+            color: #45a29e;
+        }
+        body.blue-theme .ship p {
+            color: #f0f0f0;
+        }
+        .ship button {
+            margin-top: 10px;
+            width: 100%;
+            padding: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        .upgrade-trader-button {
+            background-color: #ffcc00;
+            color: #0b0c10;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .upgrade-trader-button:hover:not(:disabled) {
+            background-color: #e6b800;
+            color: #ffffff;
+        }
+        .upgrade-trader-button:disabled {
+            background-color: #c5c6c7;
+            color: #1f2833;
+            cursor: not-allowed;
+        }
+        /* ==================== AUTOMATION INDICATOR ==================== */
+        .automation-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #00ff00;
+            font-size: 18px;
+            display: none;
+            cursor: default;
+        }
+        .ship.automation .automation-indicator {
+            display: block;
+        }
+        /* ==================== MODALS ==================== */
         .modal-menu {
             display: none; /* Hidden by default */
             position: fixed;
@@ -222,7 +275,28 @@
             color: black;
             text-decoration: none;
         }
-
+        /* ==================== BUTTON STYLES ==================== */
+        .button {
+            background-color: #66fcf1;
+            color: #0b0c10;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            margin: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-weight: bold;
+        }
+        .button:hover:not(:disabled) {
+            background-color: #45a29e;
+            color: #ffffff;
+        }
+        .button:disabled {
+            background-color: #c5c6c7;
+            color: #1f2833;
+            cursor: not-allowed;
+        }
         /* ==================== PROGRESS BAR ==================== */
         .progress-bar {
             width: 100%;
@@ -261,78 +335,52 @@
         .progress-earnings {
             margin-left: auto;
         }
-
-        /* ==================== SHIP MODULE ==================== */
-        .ship {
-            background: #0b0c10;
-            border: 2px solid #66fcf1;
-            border-radius: 10px;
-            padding: 10px;
-            width: 220px;
-            position: relative;
-            box-shadow: 0 0 10px rgba(102,252,241,0.5);
-            margin: 10px;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: transform 0.3s, background-color 0.5s, border-color 0.5s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        body.light-theme .ship {
-            background: #ffffff;
-            border: 2px solid #66fcf1;
-        }
-        body.blue-theme .ship {
-            background: #1e3d59;
-            border: 2px solid #f0f0f0;
-        }
-        .ship:hover {
-            transform: scale(1.05);
-        }
-        .ship p {
-            margin: 5px 0;
-            color: #66fcf1;
+        /* ==================== VERSION NUMBER ==================== */
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
             font-size: 14px;
+            color: #66fcf1;
+            transition: color 0.5s;
         }
-        body.light-theme .ship p {
+        body.light-theme .version {
             color: #45a29e;
         }
-        body.blue-theme .ship p {
+        body.blue-theme .version {
             color: #f0f0f0;
         }
-        .ship button {
-            margin-top: 10px;
-            width: 100%;
-            padding: 5px;
-            font-size: 14px;
+        /* ==================== HIGHLIGHTED CREDITS ==================== */
+        #credits {
+            font-size: 24px;
             font-weight: bold;
-            border-radius: 5px;
+            transition: color 0.5s;
         }
-
-        /* ==================== AUTOMATION INDICATOR ==================== */
-        .automation-indicator {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: #00ff00;
-            font-size: 18px;
-            display: none;
-            cursor: default;
+        /* ==================== SPACESHIP CAP DISPLAY ==================== */
+        #spaceship-display {
+            transition: color 0.5s;
         }
-        .ship.automation .automation-indicator {
-            display: block;
+        /* ==================== TECH LEVEL DISPLAY ==================== */
+        #tech-level-display {
+            transition: color 0.5s;
         }
-
-        /* ==================== SHIP CONTAINER ==================== */
-        .ship-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 1200px;
-            margin: 0 auto;
+        /* ==================== TIME PLAYED DISPLAY ==================== */
+        #time-played {
+            transition: color 0.5s;
         }
-
+        /* ==================== IMPORTANT TEXT ==================== */
+        .important {
+            color: red;
+            font-weight: bold;
+        }
+        /* ==================== UPGRADE HIGHLIGHT ==================== */
+        .upgrade-highlight {
+            animation: highlightUpgrade 1s;
+        }
+        @keyframes highlightUpgrade {
+            from { box-shadow: 0 0 10px 5px #66fcf1; }
+            to { box-shadow: 0 0 0px 0px #66fcf1; }
+        }
         /* ==================== RESPONSIVE DESIGN ==================== */
         @media (max-width: 1200px) {
             .ship {
@@ -345,114 +393,21 @@
             }
             .top-buttons {
                 flex-direction: column;
-                align-items: flex-end;
+                align-items: center;
                 gap: 10px;
             }
             .progress-bar {
                 height: 20px;
             }
-            .buy-toggle button {
+            .top-buttons .button {
                 font-size: 14px;
             }
-        }
-
-        /* ==================== HIGHLIGHTED CREDITS ==================== */
-        #credits {
-            font-size: 24px;
-            font-weight: bold;
-            color: #66fcf1;
-            transition: color 0.5s;
-        }
-        body.light-theme #credits {
-            color: #45a29e;
-        }
-        body.blue-theme #credits {
-            color: #f0f0f0;
-        }
-
-        /* ==================== SPACESHIP CAP DISPLAY ==================== */
-        #spaceship-display {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 5px;
-            color: #c5c6c7;
-            transition: color 0.5s;
-        }
-        body.light-theme #spaceship-display {
-            color: #1f2833;
-        }
-        body.blue-theme #spaceship-display {
-            color: #f0f0f0;
-        }
-
-        /* ==================== TECH LEVEL DISPLAY ==================== */
-        #tech-level-display {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 5px;
-            color: #c5c6c7;
-            transition: color 0.5s;
-        }
-        body.light-theme #tech-level-display {
-            color: #1f2833;
-        }
-        body.blue-theme #tech-level-display {
-            color: #f0f0f0;
-        }
-
-        /* ==================== TIME PLAYED DISPLAY ==================== */
-        #time-played {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 5px;
-            color: #c5c6c7;
-            transition: color 0.5s;
-        }
-        body.light-theme #time-played {
-            color: #1f2833;
-        }
-        body.blue-theme #time-played {
-            color: #f0f0f0;
-        }
-
-        /* ==================== IMPORTANT TEXT ==================== */
-        .important {
-            color: red;
-            font-weight: bold;
-        }
-
-        /* ==================== LOG CLEAR BUTTON ==================== */
-        .clear-log-button {
-            background: #ff5555;
-            color: #ffffff;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .clear-log-button:hover:not(:disabled) {
-            background: #ff0000;
-        }
-
-        /* ==================== UPGRADE HIGHLIGHT ==================== */
-        .upgrade-highlight {
-            animation: highlightUpgrade 1s;
-        }
-
-        @keyframes highlightUpgrade {
-            from { box-shadow: 0 0 10px 5px #66fcf1; }
-            to { box-shadow: 0 0 0px 0px #66fcf1; }
         }
     </style>
 </head>
 <body>
     <!-- Header Links -->
     <a href="https://sites.google.com/view/staticquasar931" class="header-link">Made By Static</a>
-
-    <!-- Play Game Here Link -->
     <a href="https://sites.google.com/view/staticquasar931/static-gmes/interstellar-trader" class="header-link play-game-link">Play Game Here</a>
 
     <!-- Top Buttons Bar -->
@@ -473,6 +428,7 @@
         <p id="spaceship-display">Spaceships: 1/10 🚀</p>
         <p id="tech-level-display"><strong>Technology Level:</strong> 1.0 ✯</p>
         <p id="time-played">Time Played: 0h 0m 0s</p>
+        <p id="rebirth-points">Rebirth Points (RP): 0 🔄</p>
         <div class="action-buttons">
             <button class="button" onclick="sendAllShips()" title="Send all ships to trade and earn credits" aria-label="Send all ships to trade and earn credits">⚙️ Send All Ships to Trade</button>
             <button class="button" onclick="buyShip()" title="Purchase a new spaceship" aria-label="Purchase a new spaceship">⚖️ Buy a New Ship</button>
@@ -499,13 +455,13 @@
     </div>
 
     <!-- Version Number -->
-    <div class="version" id="version-number">v1.62.08</div>
+    <div class="version" id="version-number">v1.62.09</div>
 
     <!-- Modals -->
     <!-- Upgrade Menu Modal -->
     <div id="upgrade-menu" class="modal-menu" aria-hidden="true" role="dialog" aria-labelledby="upgrade-menu-title">
         <div class="modal-content" tabindex="-1">
-            <span class="close-modal" onclick="toggleUpgradeMenu()" aria-label="Close Upgrade Menu">&times;</span>
+            <span class="close-modal" onclick="closeModal('upgrade-menu')" aria-label="Close Upgrade Menu">&times;</span>
             <h3 id="upgrade-menu-title">Upgrade Menu</h3>
             <div>
                 <h4>General Upgrades</h4>
@@ -525,7 +481,7 @@
     <!-- Rebirth Menu Modal -->
     <div id="rebirth-menu" class="modal-menu" aria-hidden="true" role="dialog" aria-labelledby="rebirth-menu-title">
         <div class="modal-content" tabindex="-1">
-            <span class="close-modal" onclick="toggleRebirthMenu()" aria-label="Close Rebirth Menu">&times;</span>
+            <span class="close-modal" onclick="closeModal('rebirth-menu')" aria-label="Close Rebirth Menu">&times;</span>
             <h3 id="rebirth-menu-title">Rebirth Menu</h3>
             <p>Rebirth Points (RP): <span id="rebirth-points">0</span> 🔄</p>
             <button class="button" onclick="confirmRebirth()" title="Rebirth to reset progress and earn RP" aria-label="Rebirth to reset progress and earn RP">♻️ Rebirth (Requires 100K Credits)</button>
@@ -537,7 +493,7 @@
     <!-- Help Menu Modal -->
     <div id="help-menu" class="modal-menu" aria-hidden="true" role="dialog" aria-labelledby="help-menu-title">
         <div class="modal-content" tabindex="-1">
-            <span class="close-modal" onclick="toggleHelp()" aria-label="Close Help Menu">&times;</span>
+            <span class="close-modal" onclick="closeModal('help-menu')" aria-label="Close Help Menu">&times;</span>
             <h3 id="help-menu-title">Help</h3>
             <div>
                 <h4>Tutorial: How to Play</h4>
@@ -577,48 +533,48 @@
                     <li><strong>Ship Slots:</strong> Cost increases by 1.5x with each purchase.</li>
                 </ul>
             </div>
-            <button class="button" onclick="toggleHelp()" title="Close Help Menu" aria-label="Close Help Menu">❌ Close</button>
+            <button class="button" onclick="closeModal('help-menu')" title="Close Help Menu" aria-label="Close Help Menu">❌ Close</button>
         </div>
     </div>
 
     <!-- Rebirth Confirmation Modal -->
     <div id="rebirth-modal-confirm" class="modal-menu" aria-hidden="true" role="dialog" aria-labelledby="rebirth-modal-confirm-title">
         <div class="modal-content" tabindex="-1">
-            <span class="close-modal" onclick="closeRebirthModal()" aria-label="Close Rebirth Confirmation Modal">&times;</span>
+            <span class="close-modal" onclick="closeModal('rebirth-modal-confirm')" aria-label="Close Rebirth Confirmation Modal">&times;</span>
             <h3 id="rebirth-modal-confirm-title">Confirm Rebirth</h3>
             <p>Are you sure you want to rebirth? This will reset all your progress but grant you <strong id="points-earned">0</strong> Rebirth Points (RP).</p>
             <button class="button" onclick="rebirth()" title="Confirm Rebirth" aria-label="Confirm Rebirth">✅ Confirm</button>
-            <button class="button" onclick="closeRebirthModal()" title="Cancel Rebirth" aria-label="Cancel Rebirth">❌ Cancel</button>
+            <button class="button" onclick="closeModal('rebirth-modal-confirm')" title="Cancel Rebirth" aria-label="Cancel Rebirth">❌ Cancel</button>
         </div>
     </div>
 
     <!-- Reset Confirmation Modal -->
     <div id="reset-modal" class="modal-menu" aria-hidden="true" role="dialog" aria-labelledby="reset-modal-title">
         <div class="modal-content" tabindex="-1">
-            <span class="close-modal" onclick="closeResetModal()" aria-label="Close Reset Confirmation Modal">&times;</span>
+            <span class="close-modal" onclick="closeModal('reset-modal')" aria-label="Close Reset Confirmation Modal">&times;</span>
             <h3 id="reset-modal-title">Confirm Reset</h3>
             <p>Are you sure you want to reset the game? This action cannot be undone.</p>
             <button class="button" onclick="performReset()" title="Confirm Reset" aria-label="Confirm Reset">✅ Confirm</button>
-            <button class="button" onclick="closeResetModal()" title="Cancel Reset" aria-label="Cancel Reset">❌ Cancel</button>
+            <button class="button" onclick="closeModal('reset-modal')" title="Cancel Reset" aria-label="Cancel Reset">❌ Cancel</button>
         </div>
     </div>
 
     <!-- Share Confirmation Modal -->
     <div id="share-confirm-modal" class="modal-menu" aria-hidden="true" role="dialog" aria-labelledby="share-confirm-modal-title">
         <div class="modal-content" tabindex="-1">
-            <span class="close-modal" onclick="closeShareConfirmModal()" aria-label="Close Share Confirmation Modal">&times;</span>
+            <span class="close-modal" onclick="closeModal('share-confirm-modal')" aria-label="Close Share Confirmation Modal">&times;</span>
             <h3 id="share-confirm-modal-title">Share the Game</h3>
             <p>Share this link on your favorite platform to earn a bonus!</p>
             <div style="margin-bottom: 10px;">
-                <a href="https://twitter.com/intent/tweet?text=Join%20me%20in%20Interstellar%20Trader%20and%20build%20your%20own%20intergalactic%20trading%20empire!%20https://sites.google.com/view/staticquasar931/static-gmes/interstellar-trader" target="_blank" class="button twitter-share" style="background-color: #1da1f2; margin-right: 5px;">🐦 Share on Twitter</a>
-                <a href="https://www.facebook.com/sharer/sharer.php?u=https://sites.google.com/view/staticquasar931/static-gmes/interstellar-trader" target="_blank" class="button" style="background-color: #4267B2; margin-right: 5px;">📘 Share on Facebook</a>
-                <a href="https://www.reddit.com/submit?url=https://sites.google.com/view/staticquasar931/static-gmes/interstellar-trader&title=Interstellar%20Trader%20-%20Build%20your%20intergalactic%20trading%20empire" target="_blank" class="button" style="background-color: #FF4500; margin-right: 5px;">👽 Share on Reddit</a>
-                <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://sites.google.com/view/staticquasar931/static-gmes/interstellar-trader&title=Interstellar%20Trader&summary=Build%20your%20intergalactic%20trading%20empire!" target="_blank" class="button" style="background-color: #0077B5;">🔗 Share on LinkedIn</a>
+                <a href="#" target="_blank" class="button twitter-share" style="background-color: #1da1f2; margin-right: 5px;">🐦 Share on Twitter</a>
+                <a href="#" target="_blank" class="button facebook-share" style="background-color: #4267B2; margin-right: 5px;">📘 Share on Facebook</a>
+                <a href="#" target="_blank" class="button reddit-share" style="background-color: #FF4500; margin-right: 5px;">👽 Share on Reddit</a>
+                <a href="#" target="_blank" class="button linkedin-share" style="background-color: #0077B5;">🔗 Share on LinkedIn</a>
             </div>
             <p>Or copy the link below:</p>
             <input type="text" id="share-link" value="https://sites.google.com/view/staticquasar931/static-gmes/interstellar-trader" readonly style="width: 100%; padding: 10px; margin-bottom: 10px;">
             <button class="button" onclick="copyShareLink()" title="Copy Share Link" aria-label="Copy Share Link">📋 Copy Link</button>
-            <button class="button" onclick="closeShareConfirmModal()" title="Cancel Share" aria-label="Cancel Share">❌ Cancel</button>
+            <button class="button" onclick="closeModal('share-confirm-modal')" title="Cancel Share" aria-label="Cancel Share">❌ Cancel</button>
             <p class="important" id="share-cooldown-info"></p>
         </div>
     </div>
@@ -626,22 +582,26 @@
     <!-- Settings Menu Modal -->
     <div id="settings-menu" class="modal-menu" aria-hidden="true" role="dialog" aria-labelledby="settings-menu-title">
         <div class="modal-content" tabindex="-1">
-            <span class="close-modal" onclick="toggleSettings()" aria-label="Close Settings Menu">&times;</span>
+            <span class="close-modal" onclick="closeModal('settings-menu')" aria-label="Close Settings Menu">&times;</span>
             <h3 id="settings-menu-title">Settings</h3>
             <button class="button" onclick="toggleTheme()" title="Toggle Theme" aria-label="Toggle Theme">🌙 Toggle Theme</button>
             <button class="button" onclick="saveGameManually()" title="Manually Save Game" aria-label="Manually Save Game">💾 Save Game</button>
-            <button class="button" onclick="resetGame()" title="Reset Game" aria-label="Reset Game">🗑️ Reset Game</button>
-            <button class="button" onclick="exportSaveCode()" title="Export Save Code" aria-label="Export Save Code">📤 Export Save Code</button>
             <button class="button" onclick="importSaveCode()" title="Import Save Code" aria-label="Import Save Code">📥 Import Save Code</button>
+            <button class="button" onclick="exportSaveCode()" title="Export Save Code" aria-label="Export Save Code">📤 Export Save Code</button>
+            <button class="button" onclick="resetGame()" title="Reset Game" aria-label="Reset Game">🗑️ Reset Game</button>
             <p class="important" id="save-feedback"></p>
             <p class="important" id="export-feedback"></p>
+            <p class="important" id="import-feedback"></p>
         </div>
     </div>
+
+    <!-- Import Save Code Modal (Dynamically Created) -->
 
     <script>
         // ==================== CONFIGURATION VARIABLES ====================
         const GAME_URL = "https://sites.google.com/view/staticquasar931/static-gmes/interstellar-trader";
         const VERSION = "v1.62.09"; // Updated version
+        const MAX_SHIPS = 1000; // Define a reasonable maximum ship limit
 
         // ==================== GAME STATE ====================
         let gameState = {
@@ -870,27 +830,27 @@
                 if (multiplierButton) {
                     const cost = Math.floor(10000 * Math.pow(1.5, gameState.techLevel - 1));
                     multiplierButton.innerText = `✖️ Buy Multiplier (Cost: ${formatNumberWithSuffix(cost)} Credits)`;
-                    multiplierButton.disabled = gameState.credits < cost;
+                    multiplierButton.disabled = gameState.credits < cost || gameState.multiplier >= 50; // Example cap
                 }
                 if (hireStorageButton) {
                     const storageCost = Math.floor(gameState.employees.storage.cost * Math.pow(1.2, gameState.employees.storage.level));
                     hireStorageButton.innerText = `📦 Hire Storage Employee (Cost: ${formatNumberWithSuffix(storageCost)} Credits)`;
-                    hireStorageButton.disabled = gameState.credits < storageCost || gameState.employees.storage.level >= EMPLOYEE_MAX_LEVEL.storage;
+                    hireStorageButton.disabled = gameState.credits < storageCost || gameState.employees.storage.level >= 10; // Max level 10
                 }
                 if (hireEfficiencyButton) {
                     const efficiencyCost = Math.floor(gameState.employees.efficiency.cost * Math.pow(1.2, gameState.employees.efficiency.level));
                     hireEfficiencyButton.innerText = `⚙️ Hire Efficiency Employee (Cost: ${formatNumberWithSuffix(efficiencyCost)} Credits)`;
-                    hireEfficiencyButton.disabled = gameState.credits < efficiencyCost || gameState.employees.efficiency.level >= EMPLOYEE_MAX_LEVEL.efficiency;
+                    hireEfficiencyButton.disabled = gameState.credits < efficiencyCost || gameState.employees.efficiency.level >= 10; // Max level 10
                 }
                 if (hireSecurityButton) {
                     const securityCost = Math.floor(gameState.employees.security.cost * Math.pow(1.2, gameState.employees.security.level));
                     hireSecurityButton.innerText = `🛡️ Hire Security Employee (Cost: ${formatNumberWithSuffix(securityCost)} Credits)`;
-                    hireSecurityButton.disabled = gameState.credits < securityCost || gameState.employees.security.level >= EMPLOYEE_MAX_LEVEL.security;
+                    hireSecurityButton.disabled = gameState.credits < securityCost || gameState.employees.security.level >= 10; // Max level 10
                 }
                 if (buyShipSlotsButton) {
                     const shipSlotsCost = Math.floor(20000 * Math.pow(1.5, gameState.shipLimit / 10));
                     buyShipSlotsButton.innerText = `➕ Buy Ship Slots (Cost: ${formatNumberWithSuffix(shipSlotsCost)} Credits)`;
-                    buyShipSlotsButton.disabled = gameState.credits < shipSlotsCost;
+                    buyShipSlotsButton.disabled = gameState.credits < shipSlotsCost || gameState.shipLimit >= MAX_SHIPS;
                 }
             }
 
@@ -1093,12 +1053,19 @@
                     saveGame();
                     // If automation is enabled, start the next trade automatically
                     if (ship.automation) {
-                        setTimeout(() => {
+                        ship.intervalId = setTimeout(() => {
                             sendShip(ship.id, true);
                         }, 500); // slight delay before starting next trade
+                    } else {
+                        ship.intervalId = null;
                     }
                 }
             }, intervalTime);
+
+            // Assign the interval ID to the ship for tracking
+            if (isAutomated) {
+                ship.intervalId = progressInterval;
+            }
         }
 
         function sendAllShips() {
@@ -1209,6 +1176,10 @@
 
         function buyMultiplier() {
             const cost = Math.floor(10000 * Math.pow(1.5, gameState.techLevel - 1));
+            if (gameState.multiplier >= 50) { // Example cap
+                logEvent(`⚠ Maximum multiplier reached.`, 'warning');
+                return;
+            }
             if (gameState.credits >= cost) {
                 gameState.credits -= cost;
                 gameState.multiplier += 1;
@@ -1314,13 +1285,22 @@
 
         function confirmRebirth() {
             if (gameState.credits >= 100000) {
-                openRebirthModalConfirm();
+                openModal('rebirth-modal-confirm');
+                document.getElementById('points-earned').innerText = Math.floor(gameState.totalCreditsEarned / 100000);
             } else {
                 logEvent(`⚠ Not enough credits to rebirth! (Requires 100K Credits)`, 'warning');
             }
         }
 
         function rebirth() {
+            // Check for active trades
+            const activeTrades = gameState.ships.some(ship => ship.trading);
+            if (activeTrades) {
+                logEvent(`⚠ Cannot rebirth while trades are active. Please wait for all trades to complete.`, 'warning');
+                closeModal('rebirth-modal-confirm');
+                return;
+            }
+
             const requiredCredits = 100000;
             if (gameState.credits >= requiredCredits) {
                 // Check rebirth cooldown
@@ -1339,7 +1319,7 @@
                 }
 
                 gameState.rebirthPoints += pointsEarned;
-                // Reset game state but keep rebirth points and certain upgrades
+                // Reset game state but retain employee levels
                 gameState.credits = 100;
                 gameState.techLevel = 1.0;
                 gameState.totalCreditsEarned = 100;
@@ -1349,20 +1329,8 @@
                 gameState.totalEarnings = 0;
                 gameState.totalUpgrades = 0;
                 gameState.currentBuyIndex = 0; // Reset buy amount to 1x
-                gameState.employees = {
-                    storage: {
-                        level: 0,
-                        cost: 1000
-                    },
-                    efficiency: {
-                        level: 0,
-                        cost: 1500
-                    },
-                    security: {
-                        level: 0,
-                        cost: 2000
-                    }
-                };
+                // Retain employees
+                // Reset other properties as needed
                 gameState.securityProtection = 0;
 
                 // Reset ships to only ship 1
@@ -1383,7 +1351,7 @@
                 gameState.rebirthCooldown.lastRebirthTime = currentTime;
 
                 logEvent(`♻️ You have rebirthed! Earned ${pointsEarned} Rebirth Points.`);
-                showRebirthConfirmation();
+                showRebirthConfirmation(pointsEarned);
                 updateDisplay();
                 saveGame();
             } else {
@@ -1397,6 +1365,7 @@
                 gameState.techLevel += gameState.rebirthPoints;
                 gameState.totalUpgrades += gameState.rebirthPoints;
                 logEvent(`🔧 You spent ${gameState.rebirthPoints} Rebirth Points to increase tech level by ${gameState.rebirthPoints}.`);
+                showRPSpendConfirmation(gameState.rebirthPoints);
                 gameState.rebirthPoints = 0;
                 updateDisplay();
                 saveGame();
@@ -1438,6 +1407,7 @@
 
         async function copyShareLink() {
             const shareLink = document.getElementById('share-link');
+            const copyButton = document.querySelector('#share-confirm-modal .button[onclick="copyShareLink()"]');
             if (!shareLink) {
                 logEvent(`⚠ Share Link element not found.`, 'error');
                 return;
@@ -1452,6 +1422,15 @@
                 gameState.shareCooldown.lastShareTime = Math.floor(Date.now() / 1000);
                 updateDisplay();
                 saveGame();
+                // Disable the copy button to prevent multiple clicks
+                if (copyButton) {
+                    copyButton.disabled = true;
+                    copyButton.innerText = '📋 Copied!';
+                    setTimeout(() => {
+                        copyButton.disabled = false;
+                        copyButton.innerText = '📋 Copy Link';
+                    }, 2000); // Re-enable after 2 seconds
+                }
             } catch (err) {
                 console.error('Failed to copy:', err);
                 logEvent(`⚠ Failed to copy the game link.`, 'error');
@@ -1461,6 +1440,10 @@
 
         // ==================== BUY SHIP SLOTS ====================
         function buyShipSlots() {
+            if (gameState.shipLimit >= MAX_SHIPS) {
+                logEvent(`⚠ Cannot buy more ship slots. Maximum ship limit reached.`, 'warning');
+                return;
+            }
             const cost = Math.floor(20000 * Math.pow(1.5, gameState.shipLimit / 10));
             if (gameState.credits >= cost) {
                 gameState.credits -= cost;
@@ -1586,6 +1569,7 @@
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) {
+                if (modal.style.display === 'block') return; // Prevent opening multiple instances
                 lastFocusedElement = document.activeElement;
                 modal.style.display = 'block';
                 const firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
@@ -1657,7 +1641,13 @@
         }
 
         function importSaveCode() {
+            // Check if the import modal already exists
+            if (document.getElementById('import-save-code-modal')) {
+                logEvent(`⚠ Import Save Code modal is already open.`, 'warning');
+                return;
+            }
             const importModal = document.createElement('div');
+            importModal.id = 'import-save-code-modal';
             importModal.classList.add('modal-menu');
             importModal.style.display = 'block';
             importModal.innerHTML = `
@@ -1702,8 +1692,13 @@
             try {
                 const decodedBackup = atob(saveCode);
                 const parsedBackup = JSON.parse(decodedBackup);
-                // Validate save data structure and ranges
-                if (parsedBackup.version && parsedBackup.version === VERSION && parsedBackup.credits >= 0 && parsedBackup.techLevel >= 1.0) {
+                // Enhanced validation
+                const requiredProperties = ['version', 'credits', 'techLevel', 'rebirthPoints', 'multiplier', 'ships', 'employees', 'buyAmounts', 'currentBuyIndex', 'theme', 'shipLimit', 'totalTrades', 'totalEarnings', 'totalUpgrades', 'shareCooldown', 'rebirthCooldown', 'securityProtection', 'lastImportTime'];
+                const isValid = requiredProperties.every(prop => prop in parsedBackup);
+                const isShipsValid = Array.isArray(parsedBackup.ships) && parsedBackup.ships.every(ship => 'id' in ship && 'upgrades' in ship && 'traderLevel' in ship && 'trading' in ship && 'automation' in ship);
+                const isEmployeesValid = ['storage', 'efficiency', 'security'].every(type => type in parsedBackup.employees && 'level' in parsedBackup.employees[type] && 'cost' in parsedBackup.employees[type]);
+                if (isValid && isShipsValid && isEmployeesValid && parsedBackup.version === VERSION && parsedBackup.credits >= 0 && parsedBackup.techLevel >= 1.0) {
+                    // Valid save data
                     gameState = parsedBackup;
                     migrateGameState();
                     handleOfflineProgress();
@@ -1867,6 +1862,9 @@
             }
         }
 
+        // ==================== RANDOM EVENTS ====================
+        // Already implemented above
+
         // ==================== MODAL FOCUS TRAPPING ====================
         function trapFocus(modal) {
             const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
@@ -1929,7 +1927,7 @@
         }
 
         // ==================== SHOW REBIRTH CONFIRMATION ====================
-        function showRebirthConfirmation() {
+        function showRebirthConfirmation(points) {
             const confirmationModal = document.createElement('div');
             confirmationModal.classList.add('modal-menu');
             confirmationModal.style.display = 'block';
@@ -1937,7 +1935,7 @@
                 <div class="modal-content" tabindex="-1">
                     <span class="close-modal" onclick="closeRebirthConfirmation()" aria-label="Close Rebirth Confirmation Modal">&times;</span>
                     <h3>🎉 Rebirth Successful! 🎉</h3>
-                    <p>You have been rebirthed and earned ${Math.floor(gameState.totalCreditsEarned / 100000)} Rebirth Points (RP).</p>
+                    <p>You have rebirthed and earned ${points} Rebirth Points (RP).</p>
                     <button class="button" onclick="closeRebirthConfirmation()" title="Okay" aria-label="Okay">👍 Okay</button>
                 </div>
             `;
@@ -1951,83 +1949,118 @@
             }
         }
 
-        // ==================== DIFFERENTIATE AUTOMATED TRADES ====================
-        function sendShip(shipId, isAutomated = false) {
-            const ship = gameState.ships.find(s => s.id === shipId);
-            if (!ship || ship.trading) return;
-
-            const progressBar = document.getElementById(`progress-${ship.id}`);
-            const progressTime = document.getElementById(`progress-time-${ship.id}`);
-            const progressEarnings = document.getElementById(`progress-earnings-${ship.id}`);
-            if (!progressBar || !progressTime || !progressEarnings) {
-                logEvent(`⚠ Unable to start trade for Ship ${ship.id}.`, 'warning');
+        // ==================== RP SPEND CONFIRMATION ====================
+        function showRPSpendConfirmation(points) {
+            // Check if the RP Spend Confirmation modal already exists
+            if (document.getElementById('rp-spend-confirmation-modal')) {
+                logEvent(`⚠ RP Spend Confirmation modal is already open.`, 'warning');
                 return;
             }
-
-            progressBar.style.width = '0%';
-            progressTime.innerText = '10s';
-            progressEarnings.innerText = `0 💸`;
-            ship.trading = true;
-
-            let progress = 0;
-            let tradeDuration = 10; // base trade duration in seconds
-
-            // Apply Efficiency Employee bonus: each level reduces duration by 1 second
-            const efficiencyBonus = gameState.employees.efficiency.level;
-            tradeDuration = Math.max(5, tradeDuration - efficiencyBonus);
-
-            // Apply Upgrades: every 5 upgrades reduce duration by 1 second
-            const upgradeBonus = Math.floor(ship.upgrades / 5);
-            tradeDuration = Math.max(5, tradeDuration - upgradeBonus);
-
-            const intervalTime = 1000; // 1 second intervals
-
-            const progressInterval = setInterval(() => {
-                progress++;
-                const percentage = (progress / tradeDuration) * 100;
-                progressBar.style.width = `${percentage}%`;
-                progressTime.innerText = `${tradeDuration - progress}s`;
-                const earnings = Math.floor(50 * gameState.techLevel * ship.traderLevel * gameState.multiplier);
-                progressEarnings.innerText = `${formatNumberWithSuffix(earnings)} 💸`;
-
-                if (progress >= tradeDuration) {
-                    clearInterval(progressInterval);
-                    ship.trading = false;
-                    gameState.credits += earnings;
-                    gameState.totalCreditsEarned += earnings;
-                    gameState.totalEarnings += earnings;
-                    gameState.totalTrades += 1;
-                    if (isAutomated) {
-                        logEvent(`✨ [AUTO] Ship ${ship.id} completed a trade mission and earned ${formatNumberWithSuffix(earnings)} credits!`);
-                    } else {
-                        logEvent(`✨ Ship ${ship.id} completed a trade mission and earned ${formatNumberWithSuffix(earnings)} credits!`);
-                    }
-                    progressBar.style.width = '0%'; // Reset progress bar
-                    updateDisplay();
-                    triggerRandomEvent();
-                    saveGame();
-                    // If automation is enabled, start the next trade automatically
-                    if (ship.automation) {
-                        setTimeout(() => {
-                            sendShip(ship.id, true);
-                        }, 500); // slight delay before starting next trade
-                    }
-                }
-            }, intervalTime);
+            const confirmationModal = document.createElement('div');
+            confirmationModal.id = 'rp-spend-confirmation-modal';
+            confirmationModal.classList.add('modal-menu');
+            confirmationModal.style.display = 'block';
+            confirmationModal.innerHTML = `
+                <div class="modal-content" tabindex="-1">
+                    <span class="close-modal" onclick="closeRPSpendConfirmation()" aria-label="Close RP Spend Confirmation Modal">&times;</span>
+                    <h3>✅ RP Spent Successfully!</h3>
+                    <p>You have spent ${points} Rebirth Points to increase your tech level by ${points}.</p>
+                    <button class="button" onclick="closeRPSpendConfirmation()" title="Okay" aria-label="Okay">👍 Okay</button>
+                </div>
+            `;
+            document.body.appendChild(confirmationModal);
         }
 
-        // ==================== DIFFERENTIATE AUTOMATED TRADES ====================
-        // Already handled in sendShip function with the isAutomated flag
+        function closeRPSpendConfirmation() {
+            const confirmationModal = document.getElementById('rp-spend-confirmation-modal');
+            if (confirmationModal) {
+                confirmationModal.remove();
+            }
+        }
 
-        // ==================== UPGRADE FEEDBACK ====================
-        // Already implemented with upgrade-highlight class and log events
+        // ==================== MODAL MANAGER ====================
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                if (modal.style.display === 'block') return; // Prevent opening multiple instances
+                lastFocusedElement = document.activeElement;
+                modal.style.display = 'block';
+                const firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                if (firstFocusable) {
+                    firstFocusable.focus();
+                }
+                trapFocus(modal);
+            } else {
+                logEvent(`⚠ Modal ${modalId} not found.`, 'error');
+            }
+        }
 
-        // ==================== Accessibility Enhancements ====================
-        // ARIA labels and roles have been added to interactive elements
-        // Focus trapping implemented within modals
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+                if (lastFocusedElement) {
+                    lastFocusedElement.focus();
+                }
+            }
+        }
 
-        // ==================== INITIALIZE GAME ====================
-        // Already implemented above
+        // ==================== SAVE & LOAD FUNCTIONS ====================
+        function resetGameState() {
+            gameState = {
+                credits: 100,
+                techLevel: 1.0,
+                rebirthPoints: 0,
+                totalCreditsEarned: 100,
+                multiplier: 1,
+                ships: [
+                    {
+                        id: 1,
+                        upgrades: 0,
+                        traderLevel: 1,
+                        trading: false,
+                        automation: false,
+                        intervalId: null
+                    }
+                ],
+                buyAmounts: ['1x', '10x', '15x', '30x', '50x', 'Max'],
+                currentBuyIndex: 0,
+                theme: 'dark',
+                shipLimit: 10,
+                totalTrades: 0,
+                totalEarnings: 0,
+                totalUpgrades: 0,
+                lastSaveTime: Date.now(),
+                timePlayed: 0,
+                employees: {
+                    storage: {
+                        level: 0,
+                        cost: 1000
+                    },
+                    efficiency: {
+                        level: 0,
+                        cost: 1500
+                    },
+                    security: {
+                        level: 0,
+                        cost: 2000
+                    }
+                },
+                shareCooldown: {
+                    lastShareTime: 0,
+                    cooldownDuration: 1922
+                },
+                rebirthCooldown: {
+                    lastRebirthTime: 0,
+                    cooldownDuration: 604800
+                },
+                securityProtection: 0,
+                version: VERSION,
+                lastImportTime: 0
+            };
+            addShip(1);
+            saveGame();
+        }
 
         // ==================== FINAL NOTES ====================
         // The game is now streamlined with all identified bugs fixed. Unique element IDs, capped employee levels with diminishing returns, security employee benefits utilized through random events, clear visual feedback for upgrades and rebirths, accessibility features, and optimized performance for high ship counts have been implemented. All features are compatible with Google Sites, ensuring a seamless player experience without disruptive alerts or pop-ups.
